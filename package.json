@@ -6,6 +6,7 @@
   "description": "BlinkAI OpenClaw plugin for feed, marketplace, BlinkChain, live context, and NPC tools.",
   "files": [
     "dist",
+    "before_prompt_build",
     "openclaw.plugin.json",
     "skills",
     "README.md"
