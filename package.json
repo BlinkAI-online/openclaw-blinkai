@@ -1,0 +1,33 @@
+{
+  "name": "@blinkai-online/openclaw-blinkai",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "BlinkAI OpenClaw plugin for feed, marketplace, BlinkChain, live context, and NPC tools.",
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "skills",
+    "README.md"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "hooks": [
+      "before_prompt_build"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "blinkai",
+  "name": "BlinkAI",
+  "description": "BlinkAI feed, marketplace, BlinkChain, live context, and NPC tools for OpenClaw.",
+  "skills": [
+    "skills"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": {
+        "type": "string"
+      },
+      "connectUrl": {
+        "type": "string"
+      },
+      "apiTokenEnv": {
+        "type": "string"
+      },
+      "pushSecretEnv": {
+        "type": "string"
+      },
+      "injectLiveContext": {
+        "type": "boolean",
+        "default": true
+      },
+      "locationMaxAgeSec": {
+        "type": "number",
+        "default": 120
+      },
+      "safeWrites": {
+        "type": "boolean",
+        "default": true
+      },
+      "relayAgent": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "required": [
+      "baseUrl"
+    ]
+  }
+}
