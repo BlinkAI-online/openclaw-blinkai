@@ -12,8 +12,26 @@ function readEnv(name) {
         : {};
     return env[name] ?? null;
 }
-function getClientConfig(api) {
-    const config = api.getConfig();
+function resolvePluginConfig(api, context) {
+    if (typeof api.getConfig === 'function') {
+        return api.getConfig();
+    }
+    if (api.config && typeof api.config === 'object') {
+        return api.config;
+    }
+    if (api.plugin?.config && typeof api.plugin.config === 'object') {
+        return api.plugin.config;
+    }
+    if (context?.config && typeof context.config === 'object') {
+        return context.config;
+    }
+    if (context?.plugin?.config && typeof context.plugin.config === 'object') {
+        return context.plugin.config;
+    }
+    return {};
+}
+function getClientConfig(api, context) {
+    const config = resolvePluginConfig(api, context);
     return {
         baseUrl: String(config.baseUrl ?? ''),
         apiToken: config.apiTokenEnv ? readEnv(String(config.apiTokenEnv)) : null,
@@ -21,94 +39,94 @@ function getClientConfig(api) {
         relayAgent: config.relayAgent !== false,
     };
 }
-export default function register(api) {
+export default function register(api, context) {
     api.registerTool({
         name: 'blinkai_agent_session',
         description: 'Read the current BlinkAI chat relay session for this onboarded OpenClaw agent.',
-        execute: async () => getAgentSession(getClientConfig(api)),
+        execute: async () => getAgentSession(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_agent_claim_next_command',
         description: 'Claim the next pending Blink user command routed to this OpenClaw agent.',
-        execute: async () => claimNextAgentCommand(getClientConfig(api)),
+        execute: async () => claimNextAgentCommand(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_agent_read_command',
         description: 'Read a specific Blink user command that was routed to this OpenClaw agent.',
-        execute: async (args) => readAgentCommand(getClientConfig(api), Number(args.commandId)),
+        execute: async (args) => readAgentCommand(getClientConfig(api, context), Number(args.commandId)),
     });
     api.registerTool({
         name: 'blinkai_agent_complete_command',
         description: 'Complete a claimed Blink user command with the OpenClaw agent response.',
-        execute: async (args) => completeAgentCommand(getClientConfig(api), Number(args.commandId), String(args.body ?? ''), (args.metadata ?? {})),
+        execute: async (args) => completeAgentCommand(getClientConfig(api, context), Number(args.commandId), String(args.body ?? ''), (args.metadata ?? {})),
     });
     api.registerTool({
         name: 'blinkai_get_context',
         description: 'Read the user’s current BlinkAI context.',
-        execute: async () => getContext(getClientConfig(api)),
+        execute: async () => getContext(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_get_live_location',
         description: 'Read the user’s latest BlinkAI location snapshot.',
-        execute: async () => getLiveLocation(getClientConfig(api)),
+        execute: async () => getLiveLocation(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_feed_list',
         description: 'List BlinkAI feed posts.',
-        execute: async (args) => listFeed(getClientConfig(api), Number(args.limit ?? 10)),
+        execute: async (args) => listFeed(getClientConfig(api, context), Number(args.limit ?? 10)),
     });
     api.registerTool({
         name: 'blinkai_feed_search',
         description: 'Search BlinkAI feed posts.',
-        execute: async (args) => searchFeed(getClientConfig(api), String(args.query ?? ''), Number(args.limit ?? 10)),
+        execute: async (args) => searchFeed(getClientConfig(api, context), String(args.query ?? ''), Number(args.limit ?? 10)),
     });
     api.registerTool({
         name: 'blinkai_marketplace_search',
         description: 'Search BlinkAI marketplace listings.',
-        execute: async (args) => searchMarketplace(getClientConfig(api), String(args.query ?? ''), Number(args.limit ?? 10)),
+        execute: async (args) => searchMarketplace(getClientConfig(api, context), String(args.query ?? ''), Number(args.limit ?? 10)),
     });
     api.registerTool({
         name: 'blinkai_listing_get',
         description: 'Get a BlinkAI marketplace listing.',
-        execute: async (args) => getListing(getClientConfig(api), Number(args.listingId)),
+        execute: async (args) => getListing(getClientConfig(api, context), Number(args.listingId)),
     });
     api.registerTool({
         name: 'blinkai_wallet_summary',
         description: 'Read the Blink wallet summary.',
-        execute: async () => getWalletSummary(getClientConfig(api)),
+        execute: async () => getWalletSummary(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_chain_status',
         description: 'Read BlinkChain status.',
-        execute: async () => getChainStatus(getClientConfig(api)),
+        execute: async () => getChainStatus(getClientConfig(api, context)),
     });
     api.registerTool({
         name: 'blinkai_tx_prepare',
         description: 'Prepare a BlinkChain transaction with Blink confirmation.',
-        execute: async (args) => prepareTransaction(getClientConfig(api), String(args.action ?? 'unknown'), args.payload ?? {}),
+        execute: async (args) => prepareTransaction(getClientConfig(api, context), String(args.action ?? 'unknown'), args.payload ?? {}),
     });
     api.registerTool({
         name: 'blinkai_contract_read',
         description: 'Perform a Blink contract read through BlinkAI.',
-        execute: async (args) => blinkRequest(getClientConfig(api), '/chain/contract/read', { method: 'POST', body: JSON.stringify({ action: 'contract_read', payload: args }) }),
+        execute: async (args) => blinkRequest(getClientConfig(api, context), '/chain/contract/read', { method: 'POST', body: JSON.stringify({ action: 'contract_read', payload: args }) }),
     });
     api.registerTool({
         name: 'blinkai_post_create',
         description: 'Prepare a Blink feed post creation through BlinkAI.',
-        execute: async (args) => blinkRequest(getClientConfig(api), '/chain/tx/prepare', { method: 'POST', body: JSON.stringify({ action: 'feed_post_create', payload: args }) }),
+        execute: async (args) => blinkRequest(getClientConfig(api, context), '/chain/tx/prepare', { method: 'POST', body: JSON.stringify({ action: 'feed_post_create', payload: args }) }),
     });
     api.registerTool({
         name: 'blinkai_listing_create',
         description: 'Prepare a Blink marketplace listing creation through BlinkAI.',
-        execute: async (args) => blinkRequest(getClientConfig(api), '/chain/tx/prepare', { method: 'POST', body: JSON.stringify({ action: 'marketplace_listing_create', payload: args }) }),
+        execute: async (args) => blinkRequest(getClientConfig(api, context), '/chain/tx/prepare', { method: 'POST', body: JSON.stringify({ action: 'marketplace_listing_create', payload: args }) }),
     });
     api.registerTool({
         name: 'blinkai_tx_submit',
         description: 'Submit a prepared Blink transaction after confirmation.',
-        execute: async (args) => blinkRequest(getClientConfig(api), '/chain/tx/submit', { method: 'POST', body: JSON.stringify({ action: 'tx_submit', payload: args }) }),
+        execute: async (args) => blinkRequest(getClientConfig(api, context), '/chain/tx/submit', { method: 'POST', body: JSON.stringify({ action: 'tx_submit', payload: args }) }),
     });
     api.registerHook('before_prompt_build', async () => ({
-        prependContext: await buildLiveContext(getClientConfig(api)),
+        prependContext: await buildLiveContext(getClientConfig(api, context)),
     }));
     api.registerHttpRoute({ method: 'POST', path: '/plugins/blinkai/push' }, handlePush);
 }
