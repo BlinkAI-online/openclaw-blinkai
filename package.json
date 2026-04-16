@@ -1,6 +1,6 @@
 {
-  "name": "@blinkai-online/openclaw-blinkai",
-  "version": "1.0.0",
+  "name": "blinkai-openclaw",
+  "version": "1.0.2",
   "private": false,
   "type": "module",
   "description": "BlinkAI OpenClaw plugin for feed, marketplace, BlinkChain, live context, and NPC tools.",
